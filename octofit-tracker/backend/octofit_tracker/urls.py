@@ -27,14 +27,35 @@ router.register(r'activities', ActivityViewSet)
 router.register(r'leaderboard', LeaderboardViewSet)
 router.register(r'workouts', WorkoutViewSet)
 
+import os
+
 @api_view(['GET'])
 def api_root(request):
+    """Return root API links using the codespace hostname if available.
+
+    The workspace provides a CODESPACE_NAME environment variable when
+    running in GitHub Codespaces.  Constructing the base URL from this
+    variable ensures the responses reference the public HTTPS endpoint
+    (https://$CODESPACE_NAME-8000.app.github.dev) and avoids any
+    certificate warnings that might arise from using request.get_host().
+    If the variable is not set (e.g. running locally), fall back to the
+    request's own host information.
+    """
+    codespace = os.environ.get('CODESPACE_NAME')
+    if codespace:
+        base = f"https://{codespace}-8000.app.github.dev/api"
+    else:
+        # build_absolute_uri will include scheme and host from the
+        # incoming request; strip any trailing slash since we append
+        # components manually below.
+        base = request.build_absolute_uri('/api').rstrip('/')
+
     return Response({
-        'users': '/users/',
-        'teams': '/teams/',
-        'activities': '/activities/',
-        'leaderboard': '/leaderboard/',
-        'workouts': '/workouts/'
+        'users': f"{base}/users/",
+        'teams': f"{base}/teams/",
+        'activities': f"{base}/activities/",
+        'leaderboard': f"{base}/leaderboard/",
+        'workouts': f"{base}/workouts/",
     })
 
 urlpatterns = [

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,16 @@ SECRET_KEY = 'django-insecure-_uwe&+-61h4v$#5@nczn%!!zv!3sb+su=dt^=e_26tpq19%97&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+# When running inside GitHub Codespaces the CODESPACE_NAME environment
+# variable is populated.  Add the corresponding public hostname so Django
+# accepts requests coming from the HTTPS tunnel.  Also include localhost
+# and common loopback addresses for local development.
+codespace = os.environ.get('CODESPACE_NAME')
+allowed = ['localhost', '127.0.0.1']
+if codespace:
+    allowed.append(f"{codespace}-8000.app.github.dev")
+
+ALLOWED_HOSTS = allowed
 
 
 # Application definition
